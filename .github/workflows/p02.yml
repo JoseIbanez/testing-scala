@@ -13,21 +13,24 @@ jobs:
       with:
         java-version: '11'
 
-    - name: Move folder p02
-      run: |
-        cd $GITHUB_WORKSPACE
-        cd ./p02-rest-api
-
     - name: Check sbt
       run: | 
+        cd $GITHUB_WORKSPACE
+        cd ./p02-rest-api
         sbt --version
 
     - name: Run tests
-      run: sbt coverage test
+      run: |
+        cd $GITHUB_WORKSPACE
+        cd ./p02-rest-api
+        sbt coverage test
 
     - name: Coverage Report
-      run: sbt coverageReport
-
+      run: |
+        cd $GITHUB_WORKSPACE
+        cd ./p02-rest-api
+        sbt coverageReport
+  
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
@@ -38,10 +41,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: p02
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11'
+
+    - name: Formatting
       run: |
         cd $GITHUB_WORKSPACE
         cd ./p02-rest-api
-
-    - name: Formatting
-      run: sbt scalafmtSbtCheck scalafmtCheck test:scalafmtCheck
+        sbt scalafmtSbtCheck scalafmtCheck test:scalafmtCheck
