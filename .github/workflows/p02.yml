@@ -8,10 +8,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: p02
+    - name: Move folder p02
       run: |
         cd $GITHUB_WORKSPACE
         cd ./p02-rest-api
+
+    - name: Check sbt
+      run: | 
+        sbt --version
 
     - name: Run tests
       run: sbt coverage test
