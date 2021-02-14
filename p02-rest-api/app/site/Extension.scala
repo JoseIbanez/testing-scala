@@ -1,9 +1,6 @@
 package site
 
-import models.{NewTodoListItem, TodoListItem}
-import play.api.libs.json.Json
-import play.api.libs.json._
-
+import play.api.libs.json.{Json, _}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
@@ -14,16 +11,16 @@ class Site( id:String, name:String, city:String) {
 
   private val extensionList = new mutable.ListBuffer[Extension]()
 
-  implicit val extensionJson = Json.format[Extension]
-  implicit val exportSiteJson = Json.format[ExportSite]
+  implicit val extensionJson: OFormat[Extension] = Json.format[Extension]
+  implicit val exportSiteJson: OFormat[ExportSite] = Json.format[ExportSite]
   //implicit val todoListJson = Json.format[TodoListItem]
 
 
-  def addExtension(extension: Extension) = {
+  def addExtension(extension: Extension): ListBuffer[Extension] = {
     extensionList += extension
   }
 
-  def getExtensionList(): ListBuffer[Extension] = {
+  def getExtensionList: ListBuffer[Extension] = {
     extensionList
   }
 

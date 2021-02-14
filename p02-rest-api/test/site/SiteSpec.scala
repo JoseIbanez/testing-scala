@@ -15,7 +15,7 @@ class SiteSpec extends FunSuite {
     val site1 = new Site( "001", "Office 1", "Madrid")
     site1.addExtension(ext200)
     site1.addExtension(ext201)
-    val list1 = site1.getExtensionList()
+    val list1 = site1.getExtensionList
     println(s"list1: $list1")
     site1.save()
 
