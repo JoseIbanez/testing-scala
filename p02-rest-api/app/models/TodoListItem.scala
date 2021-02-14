@@ -7,5 +7,11 @@ case class RequestItem(
   id: Long,
   description: String,
   size: String,
+  zone: String,
   state: String
 )
+
+case class NewRequestItem(
+  description: String,
+  size: Int,
+  zone: String)

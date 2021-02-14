@@ -57,3 +57,6 @@ terraform.tfstate*
 
 #Scala
 target/
+
+#Idea
+.idea/
