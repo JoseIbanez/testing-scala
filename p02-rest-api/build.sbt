@@ -10,7 +10,8 @@ scalaVersion := "2.13.2"
 libraryDependencies += guice
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
 libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.7.1"
-
+libraryDependencies += "org.postgresql" % "postgresql" % "9.3-1102-jdbc41"
+libraryDependencies += "org.apache.commons" % "commons-dbcp2" % "2.0.1"
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "com.baeldung.controllers._"
