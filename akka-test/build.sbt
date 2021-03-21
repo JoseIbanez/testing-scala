@@ -1,3 +1,4 @@
+
 name := "akka-quickstart-scala"
 
 version := "1.0"
@@ -37,6 +38,9 @@ libraryDependencies ++= Seq(
 //  "de.heikoseeberger" %% "akka-http-jackson"        % heikoseebergerAkkaHttpJsonVersion,
 
 
+// Proto Buf
+libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.10.7"
+
 
 resolvers ++= Seq(Resolver.mavenLocal)
 
@@ -44,4 +48,8 @@ scalacOptions := Seq(
   "-unchecked",
   "-deprecation",
   "-feature"
+)
+
+Compile / PB.targets := Seq(
+  scalapb.gen() -> (Compile / sourceManaged).value / "scalapb"
 )
