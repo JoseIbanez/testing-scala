@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package com.vodafone.ucc.middleware.appdirectwebhookingester.messages;
+
+//Store information pertaining to a marketplace.
+message MarketplaceInformation {
+string partnerName =1;
+string marketplaceBaseURL =2;
+}
+
+//Store an address.
+message CompanyAddress {
+string streetAddress1 = 1;
+string streetAddress2 = 2;
+string city = 3;
+string state = 4;
+string zipCode= 5;
+}
+
+//Store list of address
+message AddressList {
+    repeated CompanyAddress address = 1;
+}
+
+
+//Store a companies location.
+message CompanyLocation {
+string name = 1;
+CompanyAddress headquartersAddress = 2;
+}
+
+//Information regarding a set of contact details.
+message ContactDetails {
+string firstname = 1;
+string lastname = 2;
+string emailAddress = 3;
+string mobile = 4;
+}
+
+//Store information pertaining to a company.
+message CompanyInformation {
+string name = 1;
+CompanyLocation location = 2;
+}
+
+//Store information pertaining to an Opco and the specific customer ordering the product.
+message OpcoInformation {
+string name = 1;
+string opcoCustomerID = 2;
+}
+
+//Information regarding the details of an order.
+message OrderDetails {
+int32 quantity = 1;
+string skuID = 2;
+string packageID = 3;
+}
+
+//An event from AppDirect.
+message AppDirectSubscriptionOrderEvent {
+string appDirectEventID =1;
+MarketplaceInformation  marketplace =2;
+CompanyInformation company = 3;
+string externalAccountID = 4;
+ContactDetails primaryContactDetails = 5;
+OrderDetails order = 6;
+OpcoInformation  opcoDetails = 7;
+}
