@@ -18,5 +18,6 @@ sudo apt-get install -y sbt
 # Docker.io
 sudo apt-get install -y docker.io
 sudo usermod -aG docker $USER
+sudo usermod -aG docker vagrant
 
 

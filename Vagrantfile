@@ -12,7 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #config.vm.box = "bento/ubuntu-20.04"
 
   config.vm.define "m1" do |m1|
-      m1.vm.provision "shell", path: "./deploy/setup-00.sh"
+      m1.vm.provision "shell", path: "./setup/setup-00.sh"
       m1.vm.hostname = "m1"
       #m1.vm.synced_folder ".", "/vagrant", type: 'virtualbox'
       m1.vm.network "forwarded_port", guest: 8888, host: 8888

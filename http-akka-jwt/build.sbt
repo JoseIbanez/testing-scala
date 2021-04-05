@@ -12,3 +12,5 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
   "org.scalatest" %% "scalatest" % "3.1.0" % Test
 )
+
+libraryDependencies += "com.github.jwt-scala" %% "jwt-core" % "7.1.3"
