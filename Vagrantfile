@@ -16,9 +16,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       m1.vm.hostname = "m1"
       #m1.vm.synced_folder ".", "/vagrant", type: 'virtualbox'
       m1.vm.network "forwarded_port", guest: 8888, host: 8888
-      m1.vm.network "forwarded_port", guest: 8080, host: 8080
+      #m1.vm.network "forwarded_port", guest: 8080, host: 8080
       m1.vm.network "forwarded_port", guest: 9092, host: 9092
       m1.vm.network "forwarded_port", guest: 9000, host: 9000
+      m1.vm.network "forwarded_port", guest:27017, host:27017
       #m1.vm.network "private_network", ip: "192.168.58.11", virtualbox__intnet: "vboxnet2"
   end
 

@@ -21,3 +21,5 @@ sudo usermod -aG docker $USER
 sudo usermod -aG docker vagrant
 
 
+#export GPG_TTY=$(tty)
+#gpgconf --launch gpg-agent
