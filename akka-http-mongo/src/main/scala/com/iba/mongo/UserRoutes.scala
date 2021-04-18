@@ -10,6 +10,7 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
+import org.mongodb.scala.{SingleObservable, result}
 
 //#import-json-formats
 //#user-routes-class
@@ -23,6 +24,8 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
   // If ask takes more time than this to complete the request is failed
   private implicit val timeout = Timeout.create(system.settings.config.getDuration("my-app.routes.ask-timeout"))
 
+  def saveUser(): Future[result.InsertOneResult] =
+    userRegistry.ask(SaveUser)
   def getUsers(): Future[Users] =
     userRegistry.ask(GetUsers)
   def getUser(name: String): Future[GetUserResponse] =
@@ -42,7 +45,9 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
         pathEnd {
           concat(
             get {
-              complete(getUsers())
+              onSuccess(saveUser()) { performed =>
+                complete((StatusCodes.OK, performed.toString))
+              }
             },
             post {
               entity(as[User]) { user =>

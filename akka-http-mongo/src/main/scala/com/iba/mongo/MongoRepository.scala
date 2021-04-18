@@ -8,6 +8,7 @@ import org.mongodb.scala.result.InsertOneResult
 import com.mongodb.MongoCredential._
 
 import collection.JavaConverters._
+import scala.concurrent.Future
 
 object MongoRepository extends LazyLogging {
 
@@ -30,19 +31,21 @@ object MongoRepository extends LazyLogging {
   val collection: MongoCollection[Document] =database.getCollection("col1")
 
 
-  def save(user: String) {
+  def save(user: String): Future[result.InsertOneResult] = {
     val doc: Document = Document("_id" -> UUID.randomUUID.toString, "name" -> "MongoDB", "type" -> "database", "count" -> 1, "info" -> Document("x" -> 203, "y" -> 102))
     val result:  SingleObservable[InsertOneResult] =  collection.insertOne(doc)
 
-      
-
+    /*
+    result
       .subscribe(new Observer[InsertOneResult] {
         override def onNext(result: InsertOneResult): Unit = println(s"onNext: $result")
         override def onError(e: Throwable): Unit = println(s"onError: $e")
         override def onComplete(): Unit = println("onComplete")
       })
+    */
 
     logger.info(doc.toString())
+    result.toFuture()
   }
 
 }

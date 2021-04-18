@@ -4,16 +4,22 @@ package com.iba.mongo
 import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
+import com.typesafe.scalalogging.LazyLogging
+import org.mongodb.scala.{SingleObservable, result}
+
 import scala.collection.immutable
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+
 
 //#user-case-classes
 final case class User(name: String, age: Int, countryOfResidence: String)
 final case class Users(users: immutable.Seq[User])
 //#user-case-classes
 
-object UserRegistry {
+object UserRegistry extends LazyLogging {
   // actor protocol
   sealed trait Command
+  final case class SaveUser(replyTo: ActorRef[result.InsertOneResult]) extends Command
   final case class GetUsers(replyTo: ActorRef[Users]) extends Command
   final case class CreateUser(user: User, replyTo: ActorRef[ActionPerformed]) extends Command
   final case class GetUser(name: String, replyTo: ActorRef[GetUserResponse]) extends Command
@@ -24,11 +30,21 @@ object UserRegistry {
 
   def apply(): Behavior[Command] = registry(Set.empty)
 
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
+
   private def registry(users: Set[User]): Behavior[Command] =
     Behaviors.receiveMessage {
+      case SaveUser(replyTo) =>
+        val localReplyTo = replyTo
+        MongoRepository.save("aa")
+          .map { saveResult =>
+            logger.info(saveResult.toString)
+            localReplyTo ! saveResult
+          }
+        //replyTo ! mongoResult
+        Behaviors.same
       case GetUsers(replyTo) =>
         replyTo ! Users(users.toSeq)
-        MongoRepository.save("aa")
         Behaviors.same
       case CreateUser(user, replyTo) =>
         replyTo ! ActionPerformed(s"User ${user.name} created.")
