@@ -1,51 +1,91 @@
 package com.iba.mongo
 
-import java.util.UUID
+//import java.util.UUID
 
-import org.mongodb.scala._
-import com.typesafe.scalalogging.LazyLogging
-import org.mongodb.scala.result.InsertOneResult
-import com.mongodb.MongoCredential._
+import org.slf4j.LoggerFactory
 
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Future
+//import scala.concurrent.JavaConversions
+import scala.concurrent.ExecutionContext.Implicits.global
+import org.mongodb.scala._
+//import org.mongodb.scala.result.InsertOneResult
+import com.mongodb.MongoCredential._
+import org.mongodb.scala.model.Filters._
+import org.bson.codecs.{DecoderContext, EncoderContext}
+import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
+import org.bson.codecs.configuration.CodecRegistry
+import org.bson.{BsonDocumentReader, BsonDocumentWrapper, BsonDocumentWriter, BsonWriter}
+import org.mongodb.scala.bson.codecs.Macros
 
-object MongoRepository extends LazyLogging {
+//import scala.reflect.classTag
+import org.mongodb.scala.bson.collection.mutable.Document
+import MongoClient.DEFAULT_CODEC_REGISTRY
+import org.mongodb.scala.bson.BsonDocument
+import org.bson.codecs.Codec
 
+
+
+
+/*
+* ref:
+* https://stackoverflow.com/questions/33967099/serialize-to-object-using-scala-mongo-driver
+* https://stackoverflow.com/questions/33643484/how-do-i-turn-a-scala-case-class-into-a-mongo-document
+*/
+
+object MongoRepository {
+
+  val logger = LoggerFactory.getLogger(getClass.getSimpleName)
 
   val user: String = "user1"                       // the user name
   val source: String = "test_db"                 // the source where the user is defined
   val password: Array[Char] = "user1".toCharArray  // the password as a character array
   val credential: MongoCredential = createCredential(user, source, password)
 
+  val addressCodecProvider = Macros.createCodecProvider[Address]()
+  val personCodecProvider = Macros.createCodecProvider[User]()
+  val codecRegistry: CodecRegistry = fromRegistries(fromProviders(personCodecProvider,addressCodecProvider), DEFAULT_CODEC_REGISTRY)
+  val decoderContext = DecoderContext.builder.build
+  val encoderContet = EncoderContext.builder.isEncodingCollectibleDocument(true).build()
+  //val codec = codecRegistry.get(classTag[User].runtimeClass)
+  val codec = Macros.createCodec[User](codecRegistry)
+
+
 
   val mongoSettings: MongoClientSettings = MongoClientSettings.builder()
-      .applyToClusterSettings(b => b.hosts(List(new ServerAddress("localhost:27017")).asJava))
+      .applyToClusterSettings(b => b.hosts(  List(new ServerAddress("localhost:27017")).asJava))
       .credential(credential)
       .build()
 
-
-  //val mongoClient: MongoClient = MongoClient("mongodb://user1:user1@localhost:27017/?authSource=test_db")
   val mongoClient: MongoClient = MongoClient(mongoSettings)
   val database: MongoDatabase = mongoClient.getDatabase("test_db")
   val collection: MongoCollection[Document] =database.getCollection("col1")
 
 
-  def save(user: String): Future[result.InsertOneResult] = {
-    val doc: Document = Document("_id" -> UUID.randomUUID.toString, "name" -> "MongoDB", "type" -> "database", "count" -> 1, "info" -> Document("x" -> 203, "y" -> 102))
-    val result:  SingleObservable[InsertOneResult] =  collection.insertOne(doc)
+  def save(user: User): Future[result.InsertOneResult] = {
 
-    /*
-    result
-      .subscribe(new Observer[InsertOneResult] {
-        override def onNext(result: InsertOneResult): Unit = println(s"onNext: $result")
-        override def onError(e: Throwable): Unit = println(s"onError: $e")
-        override def onComplete(): Unit = println("onComplete")
-      })
-    */
-
-    logger.info(doc.toString())
+    val bsonWrite = new BsonDocumentWriter(BsonDocument())
+    codec.encode(bsonWrite, user, encoderContet)
+    val doc = Document(bsonWrite.getDocument)
+    logger.info(s"Mongo Write, document: ${doc.toJson}")
+    val result =  collection.insertOne(doc)
     result.toFuture()
+  }
+
+
+  def read(id: String): Future[String] = {
+    val result = collection.find(equal("id", id)).first()
+
+    result.toFuture.map(document => {
+      logger.info(s"Mongo Read, document: ${document}")
+      val bsonDocument = BsonDocumentWrapper.asBsonDocument(document,DEFAULT_CODEC_REGISTRY)
+      val bsonReader = new BsonDocumentReader(bsonDocument)
+      val person: User = codec.decode(bsonReader, decoderContext).asInstanceOf[User]
+      logger.info(s"Mongo Read, user: $person")
+
+      document.toJson()
+    })
+
   }
 
 }

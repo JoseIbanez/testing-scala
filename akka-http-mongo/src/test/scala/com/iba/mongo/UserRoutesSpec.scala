@@ -2,6 +2,8 @@ package com.iba.mongo
 
 //#user-routes-spec
 //#test-top
+import java.util.UUID
+
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
@@ -53,7 +55,9 @@ class UserRoutesSpec extends AnyWordSpec with Matchers with ScalaFutures with Sc
 
     //#testing-post
     "be able to add users (POST /users)" in {
-      val user = User("Kapi", 42, "jp")
+      val userId = UUID.randomUUID.toString
+
+      val user = User(userId,"Kapi", 42, "jp", Address("street", "city"))
       val userEntity = Marshal(user).to[MessageEntity].futureValue // futureValue is from ScalaFutures
 
       // using the RequestBuilding DSL:

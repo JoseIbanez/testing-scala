@@ -44,11 +44,11 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
         //#users-get-delete
         pathEnd {
           concat(
-            get {
+            /*get {
               onSuccess(saveUser()) { performed =>
                 complete((StatusCodes.OK, performed.toString))
               }
-            },
+            },*/
             post {
               entity(as[User]) { user =>
                 onSuccess(createUser(user)) { performed =>

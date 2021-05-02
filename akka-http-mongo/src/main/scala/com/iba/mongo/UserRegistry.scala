@@ -12,7 +12,8 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
 
 //#user-case-classes
-final case class User(name: String, age: Int, countryOfResidence: String)
+final case class Address(street: String, city: String)
+final case class User(id: String, name: String, age: Int, countryOfResidence: String, address: Address)
 final case class Users(users: immutable.Seq[User])
 //#user-case-classes
 
@@ -36,7 +37,7 @@ object UserRegistry extends LazyLogging {
     Behaviors.receiveMessage {
       case SaveUser(replyTo) =>
         val localReplyTo = replyTo
-        MongoRepository.save("aa")
+        MongoRepository.save(users.head)
           .map { saveResult =>
             logger.info(saveResult.toString)
             localReplyTo ! saveResult
