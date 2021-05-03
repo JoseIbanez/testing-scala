@@ -9,6 +9,7 @@ import org.mongodb.scala.{SingleObservable, result}
 
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+import scala.util.{Failure, Success}
 
 
 //#user-case-classes
@@ -45,13 +46,24 @@ object UserRegistry extends LazyLogging {
         //replyTo ! mongoResult
         Behaviors.same
       case GetUsers(replyTo) =>
+        logger.info(users.toString)
         replyTo ! Users(users.toSeq)
         Behaviors.same
       case CreateUser(user, replyTo) =>
-        replyTo ! ActionPerformed(s"User ${user.name} created.")
-        registry(users + user)
+        MongoRepository.saveUser(user)
+          .onComplete{
+            case Success(result) => replyTo ! ActionPerformed(s"User ${user.id} created.")
+            case Failure(exception) => replyTo ! ActionPerformed(s"User ${user.id} failed. Error:${exception.getMessage}")
+          }
+        //replyTo ! ActionPerformed(s"User ${user.name} created.")
+        //registry(users + user)
+        Behaviors.same
       case GetUser(name, replyTo) =>
-        replyTo ! GetUserResponse(users.find(_.name == name))
+        MongoRepository.readUser(name)
+          .onComplete {
+            case Success(user) => replyTo ! GetUserResponse(Some(user))
+            case Failure(exception) => replyTo ! GetUserResponse(None)
+          }
         Behaviors.same
       case DeleteUser(name, replyTo) =>
         replyTo ! ActionPerformed(s"User $name deleted.")

@@ -88,4 +88,33 @@ object MongoRepository {
 
   }
 
+
+  def saveUser(user: User): Future[result.InsertOneResult] = {
+    val bsonWrite = new BsonDocumentWriter(BsonDocument())
+    codec.encode(bsonWrite, user, encoderContet)
+    val doc = Document(bsonWrite.getDocument)
+
+    logger.info(s"Mongo Write, document: ${doc.toJson}")
+    val result =  collection.insertOne(doc)
+    result.toFuture()
+  }
+
+
+  def readUser(id: String): Future[User] = {
+    val result = collection.find(equal("id", id)).first()
+
+    result.toFuture.map(document => {
+      logger.info(s"Mongo Read, document: ${document}")
+      val bsonDocument = BsonDocumentWrapper.asBsonDocument(document,DEFAULT_CODEC_REGISTRY)
+      val bsonReader = new BsonDocumentReader(bsonDocument)
+      val user: User = codec.decode(bsonReader, decoderContext).asInstanceOf[User]
+      logger.info(s"Mongo Read, user: $user")
+      user
+    })
+
+  }
+
+
+
+
 }
