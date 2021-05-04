@@ -38,7 +38,7 @@ object UserRegistry extends LazyLogging {
     Behaviors.receiveMessage {
       case SaveUser(replyTo) =>
         val localReplyTo = replyTo
-        MongoRepository.save(users.head)
+        MongoRepository.saveUser(users.head)
           .map { saveResult =>
             logger.info(saveResult.toString)
             localReplyTo ! saveResult

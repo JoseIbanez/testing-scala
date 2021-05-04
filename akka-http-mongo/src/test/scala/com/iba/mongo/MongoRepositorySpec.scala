@@ -23,7 +23,7 @@ class MongoRepositorySpec extends AnyWordSpec with ScalaFutures {
       val userId = UUID.randomUUID.toString
 
       val user1 = User(id=userId,name = "Name1", age=33, countryOfResidence = "Spain", address = Address("Av. America","Madrid"))
-      val result = MongoRepository.save(user1)
+      val result = MongoRepository.saveUser(user1)
 
       whenReady(result) { r =>
         println(r.getInsertedId)
@@ -35,11 +35,11 @@ class MongoRepositorySpec extends AnyWordSpec with ScalaFutures {
     "save and read " in {
       val userId = UUID.randomUUID.toString
       val user2 = User(id=userId,name = "Name2", age=33, countryOfResidence = "Spain", address = Address("Av. America","Madrid"))
-      val result = MongoRepository.save(user2)
+      val result = MongoRepository.saveUser(user2)
 
       val user2R = result.map( r => {
         logger.info(s"Mongo Write, InsertedId: ${r.getInsertedId.toString}")
-        MongoRepository.read(userId)
+        MongoRepository.readUser(userId)
       }).flatMap(user => user)
 
       whenReady(result) { r =>
@@ -49,7 +49,7 @@ class MongoRepositorySpec extends AnyWordSpec with ScalaFutures {
 
       whenReady(user2R) { user =>
         println(s"Mongo Read, ${user}")
-        assert(!user.isEmpty)
+        assert(user.id == userId)
       }
 
     }

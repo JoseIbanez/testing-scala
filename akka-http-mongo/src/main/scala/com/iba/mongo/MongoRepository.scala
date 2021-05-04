@@ -38,7 +38,7 @@ object MongoRepository {
   val logger = LoggerFactory.getLogger(getClass.getSimpleName)
 
   val user: String = "user1"                       // the user name
-  val source: String = "test_db"                 // the source where the user is defined
+  val source: String = "admin"                 // the source where the user is defined
   val password: Array[Char] = "user1".toCharArray  // the password as a character array
   val credential: MongoCredential = createCredential(user, source, password)
 
@@ -53,7 +53,7 @@ object MongoRepository {
 
 
   val mongoSettings: MongoClientSettings = MongoClientSettings.builder()
-      .applyToClusterSettings(b => b.hosts(  List(new ServerAddress("localhost:27017")).asJava))
+      .applyToClusterSettings(b => b.hosts(List(new ServerAddress("localhost:27017")).asJava))
       .credential(credential)
       .build()
 
@@ -61,32 +61,6 @@ object MongoRepository {
   val database: MongoDatabase = mongoClient.getDatabase("test_db")
   val collection: MongoCollection[Document] =database.getCollection("col1")
 
-
-  def save(user: User): Future[result.InsertOneResult] = {
-
-    val bsonWrite = new BsonDocumentWriter(BsonDocument())
-    codec.encode(bsonWrite, user, encoderContet)
-    val doc = Document(bsonWrite.getDocument)
-    logger.info(s"Mongo Write, document: ${doc.toJson}")
-    val result =  collection.insertOne(doc)
-    result.toFuture()
-  }
-
-
-  def read(id: String): Future[String] = {
-    val result = collection.find(equal("id", id)).first()
-
-    result.toFuture.map(document => {
-      logger.info(s"Mongo Read, document: ${document}")
-      val bsonDocument = BsonDocumentWrapper.asBsonDocument(document,DEFAULT_CODEC_REGISTRY)
-      val bsonReader = new BsonDocumentReader(bsonDocument)
-      val person: User = codec.decode(bsonReader, decoderContext).asInstanceOf[User]
-      logger.info(s"Mongo Read, user: $person")
-
-      document.toJson()
-    })
-
-  }
 
 
   def saveUser(user: User): Future[result.InsertOneResult] = {
