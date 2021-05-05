@@ -9,6 +9,9 @@ import com.iba.mongo.UserRegistry._
 import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
+import akka.http.scaladsl.model.ContentTypes._
+import akka.http.scaladsl.model.headers.`Content-Type`
+import akka.http.scaladsl.server.ContentNegotiator.Alternative.ContentType
 import akka.util.Timeout
 import org.mongodb.scala.{SingleObservable, result}
 
@@ -23,6 +26,7 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
 
   // If ask takes more time than this to complete the request is failed
   private implicit val timeout = Timeout.create(system.settings.config.getDuration("my-app.routes.ask-timeout"))
+  private val appJson = List(`Content-Type`(`application/json`))
 
   def saveUser(): Future[result.InsertOneResult] =
     userRegistry.ask(SaveUser)
@@ -45,8 +49,8 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
         pathEnd {
           concat(
             get {
-              onSuccess(saveUser()) { performed =>
-                complete((StatusCodes.OK, performed.toString))
+              onSuccess(getUsers()) { performed =>
+                complete((StatusCodes.OK, performed))
               }
             },
             post {
@@ -61,11 +65,11 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
         //#users-get-post
         path(Segment) { name =>
           concat(
-            get {
+              get {
               //#retrieve-user-info
               rejectEmptyResponse {
                 onSuccess(getUser(name)) { response =>
-                  complete(response.maybeUser)
+                  complete(StatusCodes.OK,appJson, response.maybeUser)
                 }
               }
               //#retrieve-user-info
